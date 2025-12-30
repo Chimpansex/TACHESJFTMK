@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juzgado Mauna Kea</title>
+    
+    <!-- LIBRERÍAS NECESARIAS (NO BORRAR) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Roboto', sans-serif; background-color: #05224B; }
+        .font-bangers { font-family: 'Bangers', cursive; letter-spacing: 1px; }
+        .bg-mauna-kea {
+            background: radial-gradient(circle at top right, #5E2129 0%, transparent 40%),
+                        radial-gradient(circle at bottom left, #5E2129 0%, transparent 40%),
+                        #05224B;
+            min-height: 100vh;
+        }
+        .mauna-card {
+            background: rgba(5, 34, 75, 0.6);
+            backdrop-filter: blur(10px);
+            border: 2px solid #5E2129;
+            box-shadow: 0 0 15px rgba(94, 33, 41, 0.5);
+        }
+        .mauna-card-loser {
+            background: rgba(94, 33, 41, 0.6);
+            border: 2px solid #ef4444;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+        }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .shake-constant { animation: shake 0.5s infinite; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const initialMembers = [
+            { id: 1, name: "DANIPAI", taches: 0 },
+            { id: 2, name: "SESHIO", taches: 0 },
+            { id: 3, name: "RICHI", taches: 0 },
+            { id: 4, name: "DANIKEY", taches: 0 },
+            { id: 5, name: "CHUNS", taches: 0 }
+        ];
+        const rulesList = [
+            "Tolerancia de 5 minutos al llegar tarde.",
+            "Entrega de cargos a la hora establecida (viernes 23:59).",
+            "Uniforme incompleto.",
+            "Palabras antisonantes y hablar de cosas internas.",
+            "No dar asesoría mínimo cada 2 semanas.",
+            "No entregar entregables.",
+            "No realizar la revisión de documentos de actividades sabatinas.",
+            "No llevar minutas cortadas y engrapadas para la junta.",
+            "Si tu asesoría no entrega algo."
+        ];
+        const punishments = [
+            { min: 20, label: "¡ESCLAVO DE COCINA!", desc: "Toda la cocina y trastes de campamento", color: "text-red-400" },
+            { min: 15, label: "CÁRCEL DE CAMPAMENTO", desc: "Sin ver la luz del sol", color: "text-orange-400" },
+            { min: 10, label: "CÁRCEL DE JUNTA", desc: "Castigado en el rincón", color: "text-orange-300" },
+            { min: 5, label: "CINTURONAZOS", desc: "¡Preparen la espalda!", color: "text-yellow-400" },
+            { min: 3, label: "PAGA DESAYUNO", desc: "Invita a un invitado", color: "text-yellow-200" },
+            { min: 1, label: "MULTADO", desc: "Solo paga lana", color: "text-blue-300" },
+            { min: 0, label: "SANTO", desc: "Alma pura e inocente", color: "text-green-400" }
+        ];
+        const COST_PER_TACHE = 200;
+
+        function App() {
+            const [members, setMembers] = useState(initialMembers);
+            const [showRules, setShowRules] = useState(false);
+            const [loser, setLoser] = useState(null);
+
+            useEffect(() => {
+                const maxTaches = Math.max(...members.map(m => m.taches));
+                if (maxTaches > 0) {
+                    const candidates = members.filter(m => m.taches === maxTaches);
+                    setLoser(candidates.length > 1 ? { name: "¡EMPATE!", count: maxTaches, isTie: true } : { ...candidates[0], count: maxTaches, isTie: false });
+                } else {
+                    setLoser(null);
+                }
+            }, [members]);
+
+            const updateTaches = (id, increment) => {
+                setMembers(prev => prev.map(member => member.id === id ? { ...member, taches: Math.max(0, member.taches + increment) } : member));
+            };
+
+            const formatMoney = (amount) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount);
+
+            return (
+                <div className="bg-mauna-kea text-white min-h-screen">
+                    <div className="container mx-auto px-4 py-8 max-w-2xl relative z-10">
+                        <div className="text-center mb-8">
+                            <div className="flex justify-center mb-4">
+                                <div className="w-32 h-32 rounded-full border-4 border-[#5E2129] overflow-hidden shadow-[0_0_20px_rgba(94,33,41,0.6)] bg-white/10 flex items-center justify-center relative bg-black">
+                                    <img src="Mauna Kea.jpg" alt="Escudo" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = '<span class="text-xs text-center p-2 text-white">Sin imagen</span>'; }} />
+                                </div>
+                            </div>
+                            <h1 className="text-5xl text-white mb-2 font-bangers tracking-wide drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">JUZGADO MAUNA KEA</h1>
+                            <p className="text-blue-200 italic">"La ley es dura, pero es la ley... y cuesta 200 varos"</p>
+                        </div>
+
+                        {loser && (
+                            <div className="mb-8 mauna-card-loser p-4 rounded-lg text-center transform hover:scale-105 transition duration-300 relative overflow-hidden">
+                                <div className="absolute inset-0 bg-[#5E2129] opacity-30 animate-pulse"></div>
+                                <h2 className="text-2xl text-red-300 mb-1 relative z-10 flex items-center justify-center gap-2 font-bangers">
+                                    <i data-lucide="scissors" className="w-6 h-6"></i> PELIGRO DE RAPADO <i data-lucide="scissors" className="w-6 h-6 transform scale-x-[-1]"></i>
+                                </h2>
+                                <p className="text-4xl font-bold text-white relative z-10 font-bangers shake-constant">{loser.isTie ? "¡HAY UN EMPATE MORTAL!" : loser.name}</p>
+                                <p className="text-sm text-red-200 mt-2 relative z-10">{loser.isTie ? "Nadie se salva (todavía)" : `Líder indiscutible con ${loser.count} taches`}</p>
+                            </div>
+                        )}
+
+                        <div className="space-y-4 mb-12">
+                            {members.map(member => {
+                                const punish = punishments.find(p => member.taches >= p.min) || punishments[punishments.length - 1];
+                                const isLoser = loser && !loser.isTie && loser.id === member.id;
+                                return (
+                                    <div key={member.id} className={`mauna-card rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 ${isLoser ? 'border-red-500 ring-2 ring-red-500/50' : 'border-[#5E2129]'}`}>
+                                        <div className="flex-1 text-center sm:text-left">
+                                            <h3 className="text-2xl font-bold text-white font-bangers tracking-wider flex items-center justify-center sm:justify-start gap-2">{member.name} {isLoser && <span className="text-xl">👑💀</span>}</h3>
+                                            <div className={`font-bold uppercase text-sm mt-1 ${punish.color}`}>{punish.label}</div>
+                                            <div className="text-xs text-blue-200">{punish.desc}</div>
+                                        </div>
+                                        <div className="flex flex-col items-center justify-center min-w-[100px] bg-[#05224B]/50 rounded p-2 border border-[#5E2129]">
+                                            <div className="text-xs text-blue-300 uppercase">Deuda</div>
+                                            <div className="text-xl font-mono text-green-400">{formatMoney(member.taches * COST_PER_TACHE)}</div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <button onClick={() => updateTaches(member.id, -1)} className="w-10 h-10 rounded-full bg-[#05224B] border border-[#5E2129] hover:bg-[#5E2129] text-white flex items-center justify-center active:scale-95 transition-all" disabled={member.taches === 0}><i data-lucide="minus" className="w-5 h-5"></i></button>
+                                            <div className="w-12 text-center"><span className="text-3xl font-bold font-bangers">{member.taches}</span></div>
+                                            <button onClick={() => updateTaches(member.id, 1)} className="w-10 h-10 rounded-full bg-[#5E2129] hover:bg-red-900 text-white flex items-center justify-center shadow-lg shadow-[#5E2129]/40 active:scale-95 transition-transform border border-red-900"><i data-lucide="plus" className="w-5 h-5"></i></button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div className="border border-[#5E2129] rounded-lg overflow-hidden bg-[#05224B]/40">
+                            <button onClick={() => setShowRules(!showRules)} className="w-full p-4 flex items-center justify-between bg-[#5E2129]/30 hover:bg-[#5E2129]/50 transition-colors">
+                                <span className="font-bold text-white flex items-center gap-2"><i data-lucide="scroll" className="w-5 h-5"></i> TABLAS DE LA LEY (Motivos de Tache)</span>
+                                <i data-lucide={showRules ? "chevron-up" : "chevron-down"} className="w-5 h-5 text-white"></i>
+                            </button>
+                            {showRules && (
+                                <div className="p-4 text-sm text-blue-100 space-y-2 bg-[#05224B]/60">
+                                    <ul className="list-disc list-inside space-y-1">{rulesList.map((rule, idx) => <li key={idx} className="hover:text-white transition-colors">{rule}</li>)}</ul>
+                                    <div className="mt-4 pt-4 border-t border-[#5E2129] text-xs text-blue-300 text-center">Si tu asesoría no entrega algo... ya sabes lo que pasa.</div>
+                                </div>
+                            )}
+                        </div>
+                        <footer className="mt-12 text-center text-blue-300 text-sm pb-8">Escuadrón Mauna Kea &copy; {new Date().getFullYear()} <br/><span className="text-xs opacity-50">Desarrollado para que no se les olvide pagar</span></footer>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+        setTimeout(() => lucide.createIcons(), 100);
+        setInterval(() => lucide.createIcons(), 1000); 
+    </script>
+</body>
+</html>
